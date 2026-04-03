@@ -5,3 +5,13 @@ This repository contains the implementation for the models included in the exper
  HexaClus++: Uncertainty-Aware Hexagonal Supervised Spatial Clustering
 
 **Abstract**: Geospatial inference increasingly informs high-stakes decision-making in various domains. Because geospatial data are heterogeneous and unevenly distributed, geospatial tasks require not only accurate predictions of target variables but also reliable uncertainty quantification. Although existing methods attempt to provide analytical uncertainty in geospatial inference, they are often limited by strong distributional assumptions and typically provide only post-hoc uncertainty estimates rather than guiding the spatial model training process. To address these limitations, we introduce HexaClus++, a supervised and uncertainty-aware spatial discretization framework that uses both predictive performance and uncertainty quantification to guide the clustering of spatial hexagonal regions. The resulting output consists of discrete, spatially coherent regions whose boundaries reflect both data characteristics and model confidence. These regions are visually interpretable and can also be used for predictive inference on new instances. Experiments demonstrate that HexaClus++, when combined with different base learners, achieves the lowest RMSE while also delivering superior uncertainty calibration, more reliable prediction intervals, and enhanced interpretability through regional uncertainty maps and spatially varying feature importance. This makes the framework particularly valuable for real-world applications.
+
+## Data set 
+
+For the data sets used in the paper, see
+
+[**London property prices**](https://www.kaggle.com/datasets/jakewright/house-price-data)
+
+[**New York property prices**](https://www.kaggle.com/datasets/nelgiriyewithana/new-york-housing-market)
+
+[**Paris property prices**](https://www.kaggle.com/datasets/benoitfavier/immobilier-france)
