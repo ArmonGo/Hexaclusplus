@@ -1,9 +1,8 @@
-import copy 
-import pandas as pd 
+import copy
+import pandas as pd
 import numpy as np
-import copy 
 from scipy import stats
-from sklearn.preprocessing import  MinMaxScaler, StandardScaler
+from sklearn.preprocessing import StandardScaler
 from category_encoders.cat_boost import CatBoostEncoder
 import kagglehub
 import geopandas as gpd 
@@ -33,20 +32,11 @@ def scale_feats(df, scaler = StandardScaler, skip_coords = True, mask_col = 'spl
     else:
         X = df[cols]
     s.fit(X)
+    df[cols] = df[cols].astype(float)
     df.loc[:, cols] = s.transform(df[cols])
     return df, s, list(cols)  # also return scaler and scaled column names
 
-
-# ==============================================================================
-# INVERSE TRANSFORM UTILITIES
-# ==============================================================================
-
 def inverse_transform_label(pred_scaled: np.ndarray, scaler, cols: list) -> np.ndarray:
-    """
-    Revert predictions from normalized log space to original price/sqm scale.
-
-    Reverse pipeline:  pred_norm -> * σ + μ -> log1p space -> expm1 -> original
-    """
     pred_scaled = np.asarray(pred_scaled)
     label_idx = cols.index('label')
     label_mean = scaler.mean_[label_idx]
@@ -57,23 +47,12 @@ def inverse_transform_label(pred_scaled: np.ndarray, scaler, cols: list) -> np.n
 
 def inverse_transform_std(pred_scaled: np.ndarray, std_scaled: np.ndarray,
                           scaler, cols: list) -> np.ndarray:
-    """
-    Revert predicted std from normalized log space to original scale (delta method).
-
-    The StandardScaler step is linear, so std only scales (no shift):
-        std_log = std_norm * σ_scaler
-
-    The expm1 step is non-linear; the first-order Jacobian gives:
-        std_original ≈ exp(pred_log) * std_log = (pred_original + 1) * std_log
-
-    Valid when uncertainty is small relative to the mean. For coverage/intervals
-    use inverse_transform_interval_bounds() instead (exact, asymmetric).
-    """
+  
     pred_scaled = np.asarray(pred_scaled)
     std_scaled  = np.asarray(std_scaled)
-    label_idx       = cols.index('label')
+    label_idx = cols.index('label')
     label_std_scaler = scaler.scale_[label_idx]
-    std_log      = std_scaled * label_std_scaler          # denorm std → log space
+    std_log = std_scaled * label_std_scaler          # denorm std → log space
     pred_original = inverse_transform_label(pred_scaled, scaler, cols)
     return (pred_original + 1) * std_log                  # Jacobian of expm1
 
@@ -81,12 +60,7 @@ def inverse_transform_std(pred_scaled: np.ndarray, std_scaled: np.ndarray,
 def inverse_transform_interval_bounds(pred_scaled: np.ndarray, std_scaled: np.ndarray,
                                       scaler, cols: list,
                                       n_sigma: float = 1.96) -> tuple:
-    """
-    Invert symmetric prediction intervals from normalized log space to original scale.
-
-    Because expm1 is non-linear the resulting intervals are asymmetric in original
-    space, which correctly reflects the lognormal shape of the distribution.
-    """
+   
     pred_scaled = np.asarray(pred_scaled)
     std_scaled  = np.asarray(std_scaled)
     lower_orig = inverse_transform_label(pred_scaled - n_sigma * std_scaled, scaler, cols)
@@ -96,12 +70,14 @@ def inverse_transform_interval_bounds(pred_scaled: np.ndarray, std_scaled: np.nd
 
 def train_val_test_split(split_rate, length, shuffle = False, return_type = 'feats'):
     tr_r, val_r, te_r = split_rate
-    assert tr_r + val_r + te_r == 1
+    assert abs(tr_r + val_r + te_r - 1) < 1e-9, "split rates must sum to 1"
     if shuffle:
         indices = np.random.permutation(length)
     else:
         indices = np.arange(length)
-    ix_ls = [indices[:int(tr_r*length)], indices[int(tr_r*length):int((val_r + tr_r)*length)], indices[int((val_r + tr_r)*length):]]
+    ix_ls = [indices[:int(tr_r*length)], 
+             indices[int(tr_r*length):int((val_r + tr_r)*length)], 
+             indices[int(( val_r + tr_r)*length):]]
     if return_type == 'index':
         mask_ls = []
         for i in range(3):
@@ -112,7 +88,7 @@ def train_val_test_split(split_rate, length, shuffle = False, return_type = 'fea
     elif return_type == 'feats':
         split_type =  np.zeros(length, dtype=int)
         for i in range(3):
-            split_type[ix_ls[i]] = i # 0-train, 1-val, 2-test
+            split_type[ix_ls[i]] = i # 0-train, 1-val, 2-test, 3-cal
         return split_type
     
 def load_london( split_rate=None, scale =True, coords_only = False):
@@ -126,7 +102,7 @@ def load_london( split_rate=None, scale =True, coords_only = False):
     d = {'A' : 7, 'B':6, 'C':5, 'D':4, 'E':3, 'F':2, 'G':1, np.nan:0}
     df['currentEnergyRating'] = df['currentEnergyRating'].map(d)
     df["history_date"] = pd.to_numeric(df_raw["history_date"].str.replace('-',''), errors='coerce')
-    df = df[df['history_date'] >= 20240301] # not too old data 
+    df = df[df['history_date'] >= 20240201] # not too old data 
     for i in df.columns:
         if i not in category_feats:
             df[i] = pd.to_numeric(df[i], errors='coerce')
@@ -240,6 +216,7 @@ def load_gdf(df):
     gdf_train = gdf[gdf['split_type'] == 0].drop(columns= ['split_type'])
     gdf_val = gdf[gdf['split_type'] == 1].drop(columns= ['split_type'])
     gdf_test = gdf[gdf['split_type'] == 2].drop(columns= ['split_type'])
+
     df_train = gdf[gdf['split_type'] == 0].drop(columns= ['split_type'])
     df_val = gdf[gdf['split_type'] == 1].drop(columns= ['split_type'])
     df_test = gdf[gdf['split_type'] == 2].drop(columns= ['split_type'])
