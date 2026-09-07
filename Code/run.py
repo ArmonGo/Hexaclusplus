@@ -17,47 +17,50 @@ max_iter = 3000
 patience = 20
 save_path = './results/'
 
+max_iter = 3000
+patience = 20
+save_path = './results/'
+N_JOBS = -1   # grid-level parallelism: 1 = sequential; -1 = all cores; N = N processes
+
+
 param_grid = {
-    'resolutions': [7, 8, 9],  # H3 resolution
-    'uncertainty_weight': [None], # only used with 'combined_score' scoring method
+    'resolutions': [7, 8, 9],   
     'use_simulated_annealing': [True],
-    'initial_temp': [1.0],
-    'cooling_rate': [0.95],
+    'initial_temp': [1.96],  
+    'cooling_rate': [None],
     'min_samples_per_hexagon': [30],
-    'scoring_method': ['beta_nll'], 
-    'beta': [0.5],   
-    'halo_buffer': [0 ],   
+    'scoring_method': ['beta_nll'],    
+    'beta': [0.5], 
+    'halo_buffer': [0], 
     'random_seed': [0], 
 }
 
 
-# define kernel-specific hyperparameter grids
 kernel_grids = {
     'bayesian': {
-        'alpha':  [1e-6, 1e-4, 1e-2],   # noise prior --- sets alpha_1=alpha_2
-        'lambda': [1e-6, 1e-4, 1e-2],   # weight prior --- sets lambda_1=lambda_2
-        'max_iter': [100, 200, 300],   # EM iterations (more = better fit, slower)
-        'tol':    [1e-3, 1e-4],    # convergence threshold
+        'alpha':  [1e-4, 1e-2],  
+        'lambda': [1e-4, 1e-2],   
+        'max_iter': [50, 100, 200, 300],  # update min to 
+        'tol':    [1e-2, 1e-3, 1e-4],  
     },
     'knn': {
         'n_neighbors': [3, 5, 8, 10, 15],
         'weights': ['uniform', 'distance']
     },
     'rf': {
-        'n_estimators':     [50],   # fixed tree count per region when trees_growth=None; base/floor when adaptive
-        'max_depth':         [2, 3, 4],   # shallow 
+        'n_estimators':     [50],  
+        'max_depth':         [2, 3, 4],  
         'min_samples_leaf': [2, 5],
         'trees_growth':     ['sqrt'],
-        'max_estimators':   [300],    # only used when trees_growth is 'sqrt'/'log'
-        # 'max_features': [0.5, 0.8, 1.0],
+        'max_estimators':   [300]
     },
     'gaussian': {
+        'optimizer':    ['fmin_l_bfgs_b'],   # use default
         'length_scale': [0.5, 1.0],
-        'noise_level':  [1e-3, 1e-2]
-        #'length_scale': [None],
-        #'noise_level':  [None]
+        'noise_level':  [1e-3],
     }
 }
+
 
 def load_data(l_f):
     # load data 
