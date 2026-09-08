@@ -15,3 +15,5 @@ For the data sets used in the paper, see
 [**New York property prices**](https://www.kaggle.com/datasets/nelgiriyewithana/new-york-housing-market)
 
 [**Paris property prices**](https://www.kaggle.com/datasets/benoitfavier/immobilier-france)
+
+Data retrieval date: 2026-08-25
