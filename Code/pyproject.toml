@@ -1,0 +1,29 @@
+[project]
+name = "hexaclusplus"
+version = "0.1.0"
+description = "Uncertainty-aware hexagonal clustering for spatial regression"
+requires-python = ">=3.10"
+
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scipy>=1.11",
+    "scikit-learn>=1.3",
+    "geopandas>=0.14",
+    "shapely>=2.0",
+    "h3>=3.7",              # H3 hexagonal indexing 
+    "pyproj>=3.5",        
+    "pykrige>=1.7", 
+    "kagglehub>=0.2",
+    "category-encoders>=2.6",   # CatBoostEncoder for categorical features
+    "torch>=2.0",
+    "pytorch-lightning>=2.0",  
+    "srai[all]>=0.5", # srai
+    "matplotlib>=3.7",
+    "seaborn>=0.13",
+    "tqdm>=4.65",
+]
+
+
+[tool.uv]
+package = false
