@@ -19,4 +19,5 @@ For the data sets used in the paper, see
 Data retrieval date: 2026-08-25
 
 The average results over 10 times running with seed ranging from 0 to 9. Data retrieval date: 2026-09-20 
-<img width="2274" height="666" alt="image" src="https://github.com/user-attachments/assets/c2541546-c7ae-448d-ae70-d2122d15c607" />
+<img width="2272" height="774" alt="image" src="https://github.com/user-attachments/assets/e695311f-12c1-4387-a017-2c6d40c3b501" />
+
